@@ -1,0 +1,24 @@
+{
+    "name": "vico-logger",
+    "version": "1.0.0",
+    "description": "Winston-based logger with daily rotate and Discord alert",
+    "main": "index.js",
+    "author": "Asep Indra Kurniawan",
+    "license": "MIT",
+    "keywords": [
+        "logger",
+        "winston",
+        "discord",
+        "rotate",
+        "nodejs"
+    ],
+    "files": [
+        "index.js"
+    ],
+    "dependencies": {
+        "axios": "^1.7.0",
+        "dotenv": "^16.0.0",
+        "winston": "^3.10.0",
+        "winston-daily-rotate-file": "^4.7.1"
+    }
+}
