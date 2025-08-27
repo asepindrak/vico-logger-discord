@@ -1,57 +1,94 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
+var __create = Object.create;
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
 };
-Object.defineProperty(exports, "__esModule", { value: true });
-const winston_1 = require("winston");
-const winston_daily_rotate_file_1 = __importDefault(require("winston-daily-rotate-file"));
-const axios_1 = __importDefault(require("axios"));
-const dotenv_1 = __importDefault(require("dotenv"));
-const stream_1 = require("stream");
-dotenv_1.default.config();
-const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL || null;
-const logger = (0, winston_1.createLogger)({
-    level: process.env.LOG_LEVEL || "info",
-    format: winston_1.format.combine(winston_1.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }), winston_1.format.errors({ stack: true }), winston_1.format.json()),
-    transports: [
-        new winston_daily_rotate_file_1.default({
-            filename: "logs/app-%DATE%.log",
-            datePattern: "YYYY-MM-DD",
-            zippedArchive: true,
-            maxSize: "20m",
-            maxFiles: "14d"
-        }),
-        new winston_daily_rotate_file_1.default({
-            filename: "logs/error-%DATE%.log",
-            level: "error",
-            datePattern: "YYYY-MM-DD",
-            zippedArchive: true,
-            maxSize: "20m",
-            maxFiles: "30d"
-        }),
-        new winston_1.transports.Console({
-            format: winston_1.format.combine(winston_1.format.colorize(), winston_1.format.printf(({ level, message, timestamp, stack }) => {
-                return `${timestamp} ${level}: ${stack || message}`;
-            }))
-        })
-    ]
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  }
+  return to;
+};
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+
+// src/index.ts
+var index_exports = {};
+__export(index_exports, {
+  default: () => index_default
 });
-// Tambahkan transport Discord kalau ada webhook
+module.exports = __toCommonJS(index_exports);
+var import_winston = require("winston");
+var import_winston_daily_rotate_file = __toESM(require("winston-daily-rotate-file"));
+var import_axios = __toESM(require("axios"));
+var import_dotenv = __toESM(require("dotenv"));
+var import_stream = require("stream");
+import_dotenv.default.config();
+var DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL || null;
+var logger = (0, import_winston.createLogger)({
+  level: process.env.LOG_LEVEL || "info",
+  format: import_winston.format.combine(
+    import_winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
+    import_winston.format.errors({ stack: true }),
+    import_winston.format.json()
+  ),
+  transports: [
+    new import_winston_daily_rotate_file.default({
+      filename: "logs/app-%DATE%.log",
+      datePattern: "YYYY-MM-DD",
+      zippedArchive: true,
+      maxSize: "20m",
+      maxFiles: "14d"
+    }),
+    new import_winston_daily_rotate_file.default({
+      filename: "logs/error-%DATE%.log",
+      level: "error",
+      datePattern: "YYYY-MM-DD",
+      zippedArchive: true,
+      maxSize: "20m",
+      maxFiles: "30d"
+    }),
+    new import_winston.transports.Console({
+      format: import_winston.format.combine(
+        import_winston.format.colorize(),
+        import_winston.format.printf(({ level, message, timestamp, stack }) => {
+          return `${timestamp} ${level}: ${stack || message}`;
+        })
+      )
+    })
+  ]
+});
 if (DISCORD_WEBHOOK_URL) {
-    const discordStream = new stream_1.Writable({
-        write(chunk, encoding, callback) {
-            const message = chunk.toString();
-            axios_1.default.post(DISCORD_WEBHOOK_URL, {
-                content: `⚠️ **Error Log:** ${message}`
-            }).catch(() => { });
-            callback();
-        }
-    });
-    const discordTransport = new winston_1.transports.Stream({
-        stream: discordStream,
-        level: "error"
-    });
-    logger.add(discordTransport);
+  const discordStream = new import_stream.Writable({
+    write(chunk, encoding, callback) {
+      const message = chunk.toString();
+      import_axios.default.post(DISCORD_WEBHOOK_URL, {
+        content: `\u26A0\uFE0F **Error Log:** ${message}`
+      }).catch(() => {
+      });
+      callback();
+    }
+  });
+  const discordTransport = new import_winston.transports.Stream({
+    stream: discordStream,
+    level: "error"
+  });
+  logger.add(discordTransport);
 }
-exports.default = logger; // untuk import
-module.exports = logger; // untuk require
+var index_default = logger;
+module.exports = logger;
