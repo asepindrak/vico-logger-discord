@@ -62,5 +62,4 @@ if (DISCORD_WEBHOOK_URL) {
     logger.add(discordTransport);
 }
 
-export default logger;  // untuk import
 module.exports = logger; // untuk require
