@@ -1,2 +1,5 @@
+import * as winston from 'winston';
 
-export {  }
+declare const logger: winston.Logger;
+
+export { logger as default };
