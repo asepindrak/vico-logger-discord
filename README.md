@@ -7,24 +7,24 @@ A logger for Node.js based on Winston:
 
 ## Installation
 ```bash
-npm install vico-logger-discord
+npm install vico-logger
 ```
 
 ## Usage Javascript (ESM)
 ```js
-import logger from "vico-logger-discord";
+import logger from "vico-logger";
 logger.info("Hello from ESM!");
 ```
 
 ## Usage Javascript (CommonJS)
 ```js
-const logger = require("vico-logger-discord");
+const logger = require("vico-logger");
 logger.error("Hello from CJS!");
 ```
 
 ## Usage TypeScript
 ```ts
-import logger from "vico-logger-discord";
+import logger from "vico-logger";
 logger.warn("Hello from TS!");
 ```
 
