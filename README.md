@@ -1,18 +1,35 @@
-# vico-logger
+# vico-logger-discord
 
-Logger untuk Node.js berbasis Winston:
-- Log harian dengan rotasi otomatis
-- Level `error` dikirim ke Discord (jika DISCORD_WEBHOOK_URL diset)
-- Output berwarna di console saat development
+A logger for Node.js based on Winston:
+- Daily logs with automatic rotation
+- `error` level logs sent to Discord (if DISCORD_WEBHOOK_WEBHOOKURL is set)
+- Colorful output in the console during development
 
-## Instalasi
+## Installation
 ```bash
-npm install vico-logger
+npm install vico-logger-discord
+```
 
+## Usage Javascript (ESM)
+```js
+import logger from "vico-logger-discord";
+logger.info("Hello from ESM!");
+```
 
-## Cara Pakai
-const logger = require('custom-logger');
+## Usage Javascript (CommonJS)
+```js
+const logger = require("vico-logger-discord");
+logger.error("Hello from CJS!");
+```
 
-logger.info("Server starting...");
-logger.warn("Disk space is low!");
-logger.error(new Error("Database connection failed"));
+## Usage TypeScript
+```ts
+import logger from "vico-logger-discord";
+logger.warn("Hello from TS!");
+```
+
+## Environment Variable
+```bash
+DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/xxx/yyy
+LOG_LEVEL=info
+```
