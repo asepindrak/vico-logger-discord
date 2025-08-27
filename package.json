@@ -12,6 +12,14 @@
     "scripts": {
         "build": "tsup"
     },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/asepindrak/vico-logger-discord.git"
+    },
+    "bugs": {
+        "url": "https://github.com/asepindrak/vico-logger-discord/issues"
+    },
+    "homepage": "https://github.com/asepindrak/vico-logger-discord#readme",
     "keywords": [
         "logger",
         "winston",
