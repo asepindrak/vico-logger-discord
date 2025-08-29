@@ -39,10 +39,7 @@ var import_axios = __toESM(require("axios"));
 var import_dotenv = __toESM(require("dotenv"));
 var import_stream = require("stream");
 import_dotenv.default.config();
-var DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL || null;
-var queue = [];
-var isSending = false;
-var delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+var DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL;
 var logger = (0, import_winston.createLogger)({
   level: process.env.LOG_LEVEL || "info",
   format: import_winston.format.combine(
@@ -77,35 +74,47 @@ var logger = (0, import_winston.createLogger)({
   ]
 });
 if (DISCORD_WEBHOOK_URL) {
-  const discordStream = new import_stream.Writable({
-    write(chunk, encoding, callback) {
-      queue.push(chunk.toString());
-      processQueue();
-      callback();
-    }
-  });
+  const queue = [];
+  let isProcessing = false;
   const processQueue = async () => {
-    if (isSending || queue.length === 0) {
+    if (isProcessing) return;
+    if (queue.length === 0) {
+      isProcessing = false;
       return;
     }
-    isSending = true;
-    while (queue.length > 0) {
-      const message = queue.shift();
-      try {
-        await import_axios.default.post(DISCORD_WEBHOOK_URL, {
-          content: `\u26A0\uFE0F **Error Log:** ${message}`
-        });
-        await delay(1e3);
-      } catch (error) {
-        console.error("Failed to send log to Discord:", error);
+    isProcessing = true;
+    const { message, callback } = queue.shift();
+    try {
+      await import_axios.default.post(DISCORD_WEBHOOK_URL, {
+        content: `\u26A0\uFE0F **Log Error**
+\`\`\`json
+${message.substring(
+          0,
+          1800
+        )}
+\`\`\``
+      });
+    } catch (err) {
+      console.error("[Discord] Gagal kirim:", err.message);
+    } finally {
+      callback();
+      setTimeout(processQueue, 1e3);
+    }
+  };
+  const discordStream = new import_stream.Writable({
+    write(chunk, encoding, callback) {
+      const message = chunk.toString().trim();
+      queue.push({ message, callback });
+      if (!isProcessing) {
+        processQueue();
       }
     }
-    isSending = false;
-  };
-  const discordTransport = new import_winston.transports.Stream({
-    stream: discordStream,
-    level: "error"
   });
-  logger.add(discordTransport);
+  logger.add(
+    new import_winston.transports.Stream({
+      stream: discordStream,
+      level: "error"
+    })
+  );
 }
 var index_default = logger;
