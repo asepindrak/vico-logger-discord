@@ -5,6 +5,7 @@
     "description": "Winston-based logger with daily rotate and Discord alert",
     "main": "dist/index.js",
     "module": "dist/index.mjs",
+    "types": "dist/index.d.ts",
     "files": [
         "dist"
     ],

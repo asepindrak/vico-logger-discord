@@ -126,4 +126,5 @@ if (typeof window === "undefined") {
   };
 }
 
+export { logger };
 export default logger;
