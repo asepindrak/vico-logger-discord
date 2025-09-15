@@ -9,6 +9,10 @@
     "files": [
         "dist"
     ],
+    "exports": {
+        "import": "./dist/index.mjs",
+        "require": "./dist/index.js"
+    },
     "scripts": {
         "build": "tsup",
         "dev": "npx ts-node test/index.ts"
