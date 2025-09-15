@@ -1,6 +1,6 @@
 {
     "name": "vico-logger",
-    "version": "1.1.10",
+    "version": "1.1.12",
     "author": "Asep Indra Kurniawan",
     "description": "Winston-based logger with daily rotate and Discord alert",
     "main": "dist/index.js",
@@ -10,7 +10,8 @@
         "dist"
     ],
     "scripts": {
-        "build": "tsup"
+        "build": "tsup",
+        "dev": "npx ts-node test/index.ts"
     },
     "repository": {
         "type": "git",
@@ -35,8 +36,9 @@
     },
     "devDependencies": {
         "@types/node": "^24.3.0",
+        "ts-node": "^10.9.2",
         "tsup": "^8.5.0",
-        "typescript": "^5.0.0"
+        "typescript": "^5.9.2"
     },
     "license": "MIT"
 }
