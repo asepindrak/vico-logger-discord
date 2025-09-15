@@ -111,5 +111,6 @@ if (typeof window === "undefined") {
 }
 var index_default = logger;
 export {
-  index_default as default
+  index_default as default,
+  logger
 };

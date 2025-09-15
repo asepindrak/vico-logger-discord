@@ -30,7 +30,8 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 // src/index.ts
 var index_exports = {};
 __export(index_exports, {
-  default: () => index_default
+  default: () => index_default,
+  logger: () => logger
 });
 module.exports = __toCommonJS(index_exports);
 var import_winston = require("winston");
@@ -144,3 +145,7 @@ if (typeof window === "undefined") {
   };
 }
 var index_default = logger;
+// Annotate the CommonJS export names for ESM import in node:
+0 && (module.exports = {
+  logger
+});
