@@ -7,4 +7,4 @@ import path from "path";
 // logger.error("Error: Invalid input format.");
 // logger.error("Error: Resource not found.");
 // logger.error("Error: Unauthorized access attempt detected.");
-logger.error("Error: Server timeout occurred while processing the request.", path.basename(__filename));
+logger.error("Error: Server timeout occurred while processing the request.", "halo, halo", path.basename(__filename));
