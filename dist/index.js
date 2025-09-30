@@ -38,7 +38,6 @@ var import_winston = require("winston");
 var import_winston_daily_rotate_file = __toESM(require("winston-daily-rotate-file"));
 var import_axios = __toESM(require("axios"));
 var import_dotenv = __toESM(require("dotenv"));
-var import_stream = require("stream");
 import_dotenv.default.config();
 var DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL;
 var logger;
@@ -56,7 +55,8 @@ if (typeof window === "undefined") {
         datePattern: "YYYY-MM-DD",
         zippedArchive: true,
         maxSize: "20m",
-        maxFiles: "14d"
+        maxFiles: "14d",
+        format: import_winston.format.combine(import_winston.format.json())
       }),
       new import_winston_daily_rotate_file.default({
         filename: "logs/error-%DATE%.log",
@@ -64,59 +64,28 @@ if (typeof window === "undefined") {
         datePattern: "YYYY-MM-DD",
         zippedArchive: true,
         maxSize: "20m",
-        maxFiles: "30d"
+        maxFiles: "30d",
+        format: import_winston.format.combine(import_winston.format.json())
       }),
       new import_winston.transports.Console({
         format: import_winston.format.combine(
           import_winston.format.colorize(),
-          import_winston.format.printf(({ level, message, timestamp, stack }) => {
-            return `${timestamp} ${level}: ${stack || message}`;
-          })
+          import_winston.format.printf(
+            ({ level, message, timestamp, stack }) => `${timestamp} ${level}: ${stack || message}`
+          )
         )
       })
     ]
   });
   if (DISCORD_WEBHOOK_URL) {
-    const queue = [];
-    let isProcessing = false;
-    const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-    const processQueue = async () => {
-      if (isProcessing) return;
-      isProcessing = true;
-      while (queue.length > 0) {
-        const item = queue.shift();
-        if (!item) continue;
-        const { message, callback } = item;
-        try {
-          await import_axios.default.post(DISCORD_WEBHOOK_URL, {
-            content: [
-              "```json",
-              `${message.substring(0, 1800)}`,
-              "```"
-            ].join("\n")
-          });
-        } catch (err) {
-          console.error("[Discord] Gagal kirim:", err.message);
-        } finally {
-          callback();
-        }
-        await delay(500);
-      }
-      isProcessing = false;
+    const origError = logger.error.bind(logger);
+    logger.error = (...args) => {
+      origError(...args);
+      const text = args.join(" \n");
+      import_axios.default.post(DISCORD_WEBHOOK_URL, {
+        content: ["```json", text.substring(0, 1800), "```"].join("\n")
+      }).catch((e) => console.error("[Discord]", e.message));
     };
-    const discordStream = new import_stream.Writable({
-      write(chunk, encoding, callback) {
-        const message = chunk.toString().trim();
-        queue.push({ message, callback });
-        if (!isProcessing) processQueue().catch(console.error);
-      }
-    });
-    logger.add(
-      new import_winston.transports.Stream({
-        stream: discordStream,
-        level: "error"
-      })
-    );
   }
 } else {
   const sendToDiscord = (message) => {
@@ -140,7 +109,7 @@ if (typeof window === "undefined") {
     warn: (...args) => console.warn("[client-warn]", ...args),
     error: (...args) => {
       console.error("[client-error]", ...args);
-      sendToDiscord(args.join(" "));
+      sendToDiscord(args.join(" \n"));
     }
   };
 }
