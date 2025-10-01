@@ -81,9 +81,9 @@ if (typeof window === "undefined") {
     const origError = logger.error.bind(logger);
     logger.error = (...args) => {
       origError(...args);
-      const text = args.join(" \n");
+      const text = args.join(" \n--------------------------------------------------------\n");
       import_axios.default.post(DISCORD_WEBHOOK_URL, {
-        content: ["```json", text.substring(0, 1800), "```"].join("\n")
+        content: ["```json", text.substring(0, 1800), "```"].join("\n--------------------------------------------------------\n")
       }).catch((e) => console.error("[Discord]", e.message));
     };
   }
@@ -98,7 +98,7 @@ if (typeof window === "undefined") {
           "```json",
           message.substring(0, 1800),
           "```"
-        ].join("\n")
+        ].join("\n--------------------------------------------------------\n")
       })
     }).catch(() => {
     });
@@ -109,7 +109,7 @@ if (typeof window === "undefined") {
     warn: (...args) => console.warn("[client-warn]", ...args),
     error: (...args) => {
       console.error("[client-error]", ...args);
-      sendToDiscord(args.join(" \n"));
+      sendToDiscord(args.join(" \n--------------------------------------------------------\n"));
     }
   };
 }
