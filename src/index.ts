@@ -52,11 +52,11 @@ if (typeof window === "undefined") {
       // 1) Tetap log seperti biasa
       origError(...args);
       // 2) Gabungkan semua argumen jadi satu string
-      const text = args.join(" \n");
+      const text = args.join(" \n--------------------------------------------------------\n");
       // 3) Kirim ke Discord
       axios
         .post(DISCORD_WEBHOOK_URL, {
-          content: ["```json", text.substring(0, 1800), "```"].join("\n"),
+          content: ["```json", text.substring(0, 1800), "```"].join("\n--------------------------------------------------------\n"),
         })
         .catch((e) => console.error("[Discord]", e.message));
     };
@@ -73,7 +73,7 @@ if (typeof window === "undefined") {
           "```json",
           message.substring(0, 1800),
           "```",
-        ].join("\n"),
+        ].join("\n--------------------------------------------------------\n"),
       }),
     }).catch(() => {
       // ignore fetch error on client
@@ -86,7 +86,7 @@ if (typeof window === "undefined") {
     warn: (...args: any[]) => console.warn("[client-warn]", ...args),
     error: (...args: any[]) => {
       console.error("[client-error]", ...args);
-      sendToDiscord(args.join(" \n"));
+      sendToDiscord(args.join(" \n--------------------------------------------------------\n"));
     },
   };
 }
