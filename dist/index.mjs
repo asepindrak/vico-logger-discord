@@ -1,3 +1,10 @@
+var __require = /* @__PURE__ */ ((x) => typeof require !== "undefined" ? require : typeof Proxy !== "undefined" ? new Proxy(x, {
+  get: (a, b) => (typeof require !== "undefined" ? require : a)[b]
+}) : x)(function(x) {
+  if (typeof require !== "undefined") return require.apply(this, arguments);
+  throw Error('Dynamic require of "' + x + '" is not supported');
+});
+
 // src/index.ts
 import { createLogger, format, transports } from "winston";
 import DailyRotateFile from "winston-daily-rotate-file";
@@ -6,7 +13,8 @@ import dotenv from "dotenv";
 dotenv.config();
 var DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL;
 var logger;
-if (typeof window === "undefined") {
+try {
+  const fs = __require("fs");
   logger = createLogger({
     level: process.env.LOG_LEVEL || "info",
     format: format.combine(
@@ -48,11 +56,11 @@ if (typeof window === "undefined") {
       origError(...args);
       const text = args.join(" \n--------------------------------------------------------\n");
       axios.post(DISCORD_WEBHOOK_URL, {
-        content: ["```json", text.substring(0, 1800), "```"].join("\n--------------------------------------------------------\n")
+        content: ["```json", "===SERVER SIDE===\n\n" + text.substring(0, 1800), "```"].join("\n--------------------------------------------------------\n")
       }).catch((e) => console.error("[Discord]", e.message));
     };
   }
-} else {
+} catch (err) {
   const sendToDiscord = (message) => {
     if (!DISCORD_WEBHOOK_URL) return;
     fetch(DISCORD_WEBHOOK_URL, {
@@ -61,7 +69,7 @@ if (typeof window === "undefined") {
       body: JSON.stringify({
         content: [
           "```json",
-          message.substring(0, 1800),
+          "===CLIENT SIDE===\n\n" + message.substring(0, 1800),
           "```"
         ].join("\n--------------------------------------------------------\n")
       })

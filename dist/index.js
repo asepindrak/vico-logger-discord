@@ -41,7 +41,8 @@ var import_dotenv = __toESM(require("dotenv"));
 import_dotenv.default.config();
 var DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL;
 var logger;
-if (typeof window === "undefined") {
+try {
+  const fs = require("fs");
   logger = (0, import_winston.createLogger)({
     level: process.env.LOG_LEVEL || "info",
     format: import_winston.format.combine(
@@ -83,11 +84,11 @@ if (typeof window === "undefined") {
       origError(...args);
       const text = args.join(" \n--------------------------------------------------------\n");
       import_axios.default.post(DISCORD_WEBHOOK_URL, {
-        content: ["```json", text.substring(0, 1800), "```"].join("\n--------------------------------------------------------\n")
+        content: ["```json", "===SERVER SIDE===\n\n" + text.substring(0, 1800), "```"].join("\n--------------------------------------------------------\n")
       }).catch((e) => console.error("[Discord]", e.message));
     };
   }
-} else {
+} catch (err) {
   const sendToDiscord = (message) => {
     if (!DISCORD_WEBHOOK_URL) return;
     fetch(DISCORD_WEBHOOK_URL, {
@@ -96,7 +97,7 @@ if (typeof window === "undefined") {
       body: JSON.stringify({
         content: [
           "```json",
-          message.substring(0, 1800),
+          "===CLIENT SIDE===\n\n" + message.substring(0, 1800),
           "```"
         ].join("\n--------------------------------------------------------\n")
       })
