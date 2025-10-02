@@ -36,84 +36,85 @@ __export(index_exports, {
 module.exports = __toCommonJS(index_exports);
 var import_winston = require("winston");
 var import_winston_daily_rotate_file = __toESM(require("winston-daily-rotate-file"));
-var import_axios = __toESM(require("axios"));
 var import_dotenv = __toESM(require("dotenv"));
 import_dotenv.default.config();
 var DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL;
 var logger;
-try {
-  const fs = require("fs");
-  logger = (0, import_winston.createLogger)({
-    level: process.env.LOG_LEVEL || "info",
-    format: import_winston.format.combine(
-      import_winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
-      import_winston.format.errors({ stack: true }),
-      import_winston.format.json()
-    ),
-    transports: [
-      new import_winston_daily_rotate_file.default({
-        filename: "logs/app-%DATE%.log",
-        datePattern: "YYYY-MM-DD",
-        zippedArchive: true,
-        maxSize: "20m",
-        maxFiles: "14d",
-        format: import_winston.format.combine(import_winston.format.json())
-      }),
-      new import_winston_daily_rotate_file.default({
-        filename: "logs/error-%DATE%.log",
-        level: "error",
-        datePattern: "YYYY-MM-DD",
-        zippedArchive: true,
-        maxSize: "20m",
-        maxFiles: "30d",
-        format: import_winston.format.combine(import_winston.format.json())
-      }),
-      new import_winston.transports.Console({
-        format: import_winston.format.combine(
-          import_winston.format.colorize(),
-          import_winston.format.printf(
-            ({ level, message, timestamp, stack }) => `${timestamp} ${level}: ${stack || message}`
+var isServer = typeof window === "undefined";
+if (isServer) {
+  try {
+    logger = (0, import_winston.createLogger)({
+      level: process.env.LOG_LEVEL || "info",
+      format: import_winston.format.combine(
+        import_winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
+        import_winston.format.errors({ stack: true }),
+        import_winston.format.json()
+      ),
+      transports: [
+        new import_winston_daily_rotate_file.default({
+          filename: "logs/app-%DATE%.log",
+          datePattern: "YYYY-MM-DD",
+          zippedArchive: true,
+          maxSize: "20m",
+          maxFiles: "14d",
+          format: import_winston.format.combine(import_winston.format.json())
+        }),
+        new import_winston_daily_rotate_file.default({
+          filename: "logs/error-%DATE%.log",
+          level: "error",
+          datePattern: "YYYY-MM-DD",
+          zippedArchive: true,
+          maxSize: "20m",
+          maxFiles: "30d",
+          format: import_winston.format.combine(import_winston.format.json())
+        }),
+        new import_winston.transports.Console({
+          format: import_winston.format.combine(
+            import_winston.format.colorize(),
+            import_winston.format.printf(
+              ({ level, message, timestamp, stack }) => `${timestamp} ${level}: ${stack || message}`
+            )
           )
-        )
-      })
-    ]
-  });
-  if (DISCORD_WEBHOOK_URL) {
-    const origError = logger.error.bind(logger);
-    logger.error = (...args) => {
-      origError(...args);
-      const text = args.join(" \n--------------------------------------------------------\n");
-      import_axios.default.post(DISCORD_WEBHOOK_URL, {
-        content: ["```json", "===SERVER SIDE===\n\n" + text.substring(0, 1800), "```"].join("\n--------------------------------------------------------\n")
-      }).catch((e) => console.error("[Discord]", e.message));
-    };
-  }
-} catch (err) {
-  const sendToDiscord = (message) => {
-    if (!DISCORD_WEBHOOK_URL) return;
-    fetch(DISCORD_WEBHOOK_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        content: [
-          "```json",
-          "===CLIENT SIDE===\n\n" + message.substring(0, 1800),
-          "```"
-        ].join("\n--------------------------------------------------------\n")
-      })
-    }).catch(() => {
+        })
+      ]
     });
-  };
+    if (DISCORD_WEBHOOK_URL) {
+      const origError = logger.error.bind(logger);
+      logger.error = (...args) => {
+        origError(...args);
+        sendToDiscord(args.join(" \n--------------------------------------------------------\n"), false);
+      };
+    }
+  } catch (err) {
+    console.error("Failed to load file system module:", err);
+  }
+} else {
   logger = {
     info: (...args) => console.log("[client-info]", ...args),
     debug: (...args) => console.debug("[client-debug]", ...args),
     warn: (...args) => console.warn("[client-warn]", ...args),
     error: (...args) => {
       console.error("[client-error]", ...args);
-      sendToDiscord(args.join(" \n--------------------------------------------------------\n"));
+      sendToDiscord(args.join(" \n--------------------------------------------------------\n"), true);
     }
   };
 }
+var sendToDiscord = (message, isClient) => {
+  if (!DISCORD_WEBHOOK_URL) return;
+  let type = isClient ? "===CLIENT SIDE===\n\n" : "===SERVER SIDE===\n\n";
+  fetch(DISCORD_WEBHOOK_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      content: [
+        "```json",
+        type + message.substring(0, 1800),
+        "```"
+      ].join("\n--------------------------------------------------------\n")
+    })
+  }).catch(() => {
+  });
+};
 var index_default = logger;
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
