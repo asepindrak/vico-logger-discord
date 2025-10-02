@@ -8,7 +8,10 @@ const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL;
 
 let logger: any;
 
-if (typeof window === "undefined") {
+try {
+  // Coba untuk mengimpor fs, yang hanya ada di server
+  const fs = require("fs");
+  // === SERVER SIDE LOGGER ===
   logger = createLogger({
     level: process.env.LOG_LEVEL || "info",
     format: format.combine(
@@ -56,12 +59,12 @@ if (typeof window === "undefined") {
       // 3) Kirim ke Discord
       axios
         .post(DISCORD_WEBHOOK_URL, {
-          content: ["```json", text.substring(0, 1800), "```"].join("\n--------------------------------------------------------\n"),
+          content: ["```json", "===SERVER SIDE===\n\n" + text.substring(0, 1800), "```"].join("\n--------------------------------------------------------\n"),
         })
         .catch((e) => console.error("[Discord]", e.message));
     };
   }
-} else {
+} catch (err) {
   // === CLIENT SIDE LOGGER ===
   const sendToDiscord = (message: string) => {
     if (!DISCORD_WEBHOOK_URL) return;
@@ -71,7 +74,7 @@ if (typeof window === "undefined") {
       body: JSON.stringify({
         content: [
           "```json",
-          message.substring(0, 1800),
+          "===CLIENT SIDE===\n\n" + message.substring(0, 1800),
           "```",
         ].join("\n--------------------------------------------------------\n"),
       }),
