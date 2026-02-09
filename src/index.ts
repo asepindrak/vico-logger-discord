@@ -34,14 +34,19 @@ if (isServer) {
           zippedArchive: true,
           maxSize: "20m",
           maxFiles: "30d",
-          format: format.combine(format.json())
+          format: format.combine(
+            format.timestamp(),
+            format.prettyPrint()
+          ),
         }),
         new transports.Console({
           format: format.combine(
+            format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
             format.colorize(),
-            format.printf(({ level, message, timestamp, stack }) =>
-              `${timestamp} ${level}: ${stack || message}`
-            )
+            format.printf((info) => {
+              const { timestamp, level, message } = info;
+              return `${timestamp} ${level}:\n${message}`;
+            })
           ),
         }),
       ],
@@ -50,12 +55,29 @@ if (isServer) {
     // === Hook `.error` untuk kirim semua args ke Discord ===
     if (DISCORD_WEBHOOK_URL) {
       const origError = logger.error.bind(logger);
-      logger.error = (...args: any[]) => {
-        // 1) Tetap log seperti biasa
-        origError(...args);
-        // 2) Gabungkan semua argumen jadi satu string
 
-        sendToDiscord(args.join(" \n--------------------------------------------------------\n"), false);
+      logger.error = (...args: any[]) => {
+        const serialized = args
+          .map((arg) => {
+            if (arg instanceof Error) {
+              return arg.stack || arg.message;
+            }
+            if (typeof arg === "object") {
+              try {
+                return JSON.stringify(arg, null, 2);
+              } catch {
+                return String(arg);
+              }
+            }
+            return String(arg);
+          })
+          .join("\n--------------------------------------------------------\n");
+
+        // kirim 1 message ke winston (biar console/file log lengkap)
+        origError(serialized);
+
+        // kirim ke discord
+        sendToDiscord(serialized, false);
       };
     }
   } catch (err) {

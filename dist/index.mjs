@@ -31,14 +31,20 @@ if (isServer) {
           zippedArchive: true,
           maxSize: "20m",
           maxFiles: "30d",
-          format: format.combine(format.json())
+          format: format.combine(
+            format.timestamp(),
+            format.prettyPrint()
+          )
         }),
         new transports.Console({
           format: format.combine(
+            format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
             format.colorize(),
-            format.printf(
-              ({ level, message, timestamp, stack }) => `${timestamp} ${level}: ${stack || message}`
-            )
+            format.printf((info) => {
+              const { timestamp, level, message } = info;
+              return `${timestamp} ${level}:
+${message}`;
+            })
           )
         })
       ]
@@ -46,8 +52,21 @@ if (isServer) {
     if (DISCORD_WEBHOOK_URL) {
       const origError = logger.error.bind(logger);
       logger.error = (...args) => {
-        origError(...args);
-        sendToDiscord(args.join(" \n--------------------------------------------------------\n"), false);
+        const serialized = args.map((arg) => {
+          if (arg instanceof Error) {
+            return arg.stack || arg.message;
+          }
+          if (typeof arg === "object") {
+            try {
+              return JSON.stringify(arg, null, 2);
+            } catch {
+              return String(arg);
+            }
+          }
+          return String(arg);
+        }).join("\n--------------------------------------------------------\n");
+        origError(serialized);
+        sendToDiscord(serialized, false);
       };
     }
   } catch (err) {

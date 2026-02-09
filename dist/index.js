@@ -66,14 +66,20 @@ if (isServer) {
           zippedArchive: true,
           maxSize: "20m",
           maxFiles: "30d",
-          format: import_winston.format.combine(import_winston.format.json())
+          format: import_winston.format.combine(
+            import_winston.format.timestamp(),
+            import_winston.format.prettyPrint()
+          )
         }),
         new import_winston.transports.Console({
           format: import_winston.format.combine(
+            import_winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
             import_winston.format.colorize(),
-            import_winston.format.printf(
-              ({ level, message, timestamp, stack }) => `${timestamp} ${level}: ${stack || message}`
-            )
+            import_winston.format.printf((info) => {
+              const { timestamp, level, message } = info;
+              return `${timestamp} ${level}:
+${message}`;
+            })
           )
         })
       ]
@@ -81,8 +87,21 @@ if (isServer) {
     if (DISCORD_WEBHOOK_URL) {
       const origError = logger.error.bind(logger);
       logger.error = (...args) => {
-        origError(...args);
-        sendToDiscord(args.join(" \n--------------------------------------------------------\n"), false);
+        const serialized = args.map((arg) => {
+          if (arg instanceof Error) {
+            return arg.stack || arg.message;
+          }
+          if (typeof arg === "object") {
+            try {
+              return JSON.stringify(arg, null, 2);
+            } catch {
+              return String(arg);
+            }
+          }
+          return String(arg);
+        }).join("\n--------------------------------------------------------\n");
+        origError(serialized);
+        sendToDiscord(serialized, false);
       };
     }
   } catch (err) {
